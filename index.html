@@ -28,10 +28,7 @@
     font-weight: 600;
     transition: all 0.2s;
   }
-  .quick-link:hover {
-    background: #0078d4;
-    color: white;
-  }
+  .quick-link:hover { background: #0078d4; color: white; }
   .container {
     max-width: 900px;
     margin: 30px auto;
@@ -74,6 +71,7 @@
   }
   #yearContainer, #manualContainer { display: none; }
   #flmOptions { display: none; margin-top: 8px; }
+  .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -121,8 +119,11 @@
   <label>Languages (comma separated)</label>
   <input id="langsInput" placeholder="ENU,DEU,FRA,CHS,ITA,JPN">
 
-  <button id="buildBtn">Build Links</button>
-  <button id="openAllBtn" class="secondary">Open All</button>
+  <div class="btn-group">
+    <button id="buildStagingBtn">Build Staging Links</button>
+    <button id="buildProdBtn" class="secondary">Build Prod Links</button>
+    <button id="openAllBtn" class="secondary">Open All</button>
+  </div>
 
   <p id="status" style="color: green;"></p>
   <ul id="linksList"></ul>
@@ -130,9 +131,7 @@
 
 <script>
 // 🌐 Quick Links
-function openAKN() {
-  window.open("https://help.autodesk.com", "_blank");
-}
+function openAKN() { window.open("https://help.autodesk.com", "_blank"); }
 function toggleFLM() {
   const sel = document.getElementById("flmOptions");
   sel.style.display = sel.style.display === "none" ? "block" : "none";
@@ -148,7 +147,7 @@ function openJira() {
   window.open("https://jira.autodesk.com/secure/Dashboard.jspa", "_blank");
 }
 
-// ---------------- Your existing logic -----------------
+// ---------------- Core Logic -----------------
 let productsData = [];
 const productSelect = document.getElementById('productSelect');
 const yearSelect = document.getElementById('yearSelect');
@@ -157,7 +156,8 @@ const manualContainer = document.getElementById('manualContainer');
 const manualInput = document.getElementById('manualInput');
 const guidInput = document.getElementById('guidInput');
 const langsInput = document.getElementById('langsInput');
-const buildBtn = document.getElementById('buildBtn');
+const buildStagingBtn = document.getElementById('buildStagingBtn');
+const buildProdBtn = document.getElementById('buildProdBtn');
 const openAllBtn = document.getElementById('openAllBtn');
 const linksList = document.getElementById('linksList');
 const status = document.getElementById('status');
@@ -172,7 +172,6 @@ fetch('./products.json')
   })
   .catch(() => alert('❌ Failed to load products.json'));
 
-// Populate product dropdown
 function populateProducts() {
   productsData.forEach(p => {
     const opt = document.createElement('option');
@@ -188,7 +187,6 @@ function populateProducts() {
   productSelect.appendChild(otherOpt);
 }
 
-// Populate year dropdown
 function populateYears() {
   for (let y = 2055; y >= 1990; y--) {
     const opt = document.createElement('option');
@@ -199,7 +197,6 @@ function populateYears() {
   }
 }
 
-// 🧩 Handle product change
 productSelect.addEventListener('change', () => {
   const selected = productSelect.selectedOptions[0];
   if (!selected) return;
@@ -211,15 +208,11 @@ productSelect.addEventListener('change', () => {
   manualContainer.style.display = isOther ? 'block' : 'none';
 
   const product = productsData.find(p => p.code === productSelect.value);
-  if (product && product.languages) {
-    langsInput.value = product.languages.join(',');
-  } else if (isOther) {
-    langsInput.value = '';
-  }
+  if (product && product.languages) langsInput.value = product.languages.join(',');
+  else if (isOther) langsInput.value = '';
 });
 
-// 🧮 Build Links
-buildBtn.addEventListener('click', () => {
+function handleBuild(env) {
   linksList.innerHTML = '';
   status.textContent = '';
 
@@ -233,20 +226,21 @@ buildBtn.addEventListener('click', () => {
   const langList = langs.split(',').map(l => l.trim().toUpperCase()).filter(Boolean);
   let baseUrl = '';
   let year = null;
+  const root = env === 'staging'
+    ? 'https://help-staging.autodesk.com/view'
+    : 'https://help.autodesk.com/view';
 
   if (productCode && productCode !== 'OTHER') {
     const selected = productSelect.selectedOptions[0];
     const usesYear = selected.dataset.usesYearBranch === 'true';
-    baseUrl = `https://help-staging.autodesk.com/view/${productCode}`;
+    baseUrl = `${root}/${productCode}`;
     if (usesYear) year = yearSelect.value || '2026';
   } else if (manual) {
     const info = analyzeManual(manual);
     if (!info) return alert('Invalid manual input.');
-    baseUrl = info.baseUrl;
+    baseUrl = info.baseUrl.replace('help-staging.autodesk.com', env === 'staging' ? 'help-staging.autodesk.com' : 'help.autodesk.com');
     year = info.year;
-  } else {
-    return alert('Please select a product or provide a manual link.');
-  }
+  } else return alert('Please select a product or provide a manual link.');
 
   const urls = buildUrls(baseUrl, langList, guid, year);
   urls.forEach(url => {
@@ -256,18 +250,17 @@ buildBtn.addEventListener('click', () => {
     li.appendChild(a);
     linksList.appendChild(li);
   });
-  status.textContent = `✅ Built ${urls.length} links successfully.`;
-});
+  status.textContent = `✅ Built ${urls.length} ${env.toUpperCase()} links successfully.`;
+}
+
+buildStagingBtn.addEventListener('click', () => handleBuild('staging'));
+buildProdBtn.addEventListener('click', () => handleBuild('prod'));
 
 function buildUrls(baseUrl, langs, guid, year) {
   baseUrl = baseUrl.replace(/\/+$/, '');
   const urls = [];
   langs.forEach(lang => {
-    if (year) {
-      urls.push(`${baseUrl}/${year}/${lang}/?guid=${encodeURIComponent(guid)}`);
-    } else {
-      urls.push(`${baseUrl}/${lang}/?guid=${encodeURIComponent(guid)}`);
-    }
+    urls.push(`${baseUrl}${year ? `/${year}` : ''}/${lang}/?guid=${encodeURIComponent(guid)}`);
   });
   return urls;
 }
@@ -296,6 +289,5 @@ openAllBtn.addEventListener('click', () => {
   links.forEach(a => a.click());
 });
 </script>
-
 </body>
 </html>
