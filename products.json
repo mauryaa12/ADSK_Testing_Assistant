@@ -1,0 +1,74 @@
+[
+  {
+    "code": "CONNECT",
+    "name": "Autodesk Connect",
+    "languages": ["CHS", "CHT", "CSY", "DEU", "ESP", "FRA", "HUN", "ITA", "JPN", "KOR", "PLK", "PTB", "RUS"],
+    "usesYearBranch": false
+  },
+  {
+    "code": "PLM",
+    "name": "Autodesk Fusion Manage",
+    "languages": ["CHS", "CSY", "DEU", "FRA", "ITA", "JPN", "KOR"],
+    "usesYearBranch": false
+  },
+  {
+    "code": "NINCAD",
+    "name": "Autodesk NINCAD",
+    "languages": ["ENU", "CHS", "DEU", "FRA", "JPN"],
+    "usesYearBranch": true
+  },
+  {
+    "code": "TANDEM",
+    "name": "Autodesk Tandem",
+    "languages": ["JPN", "KOR", "FRA", "DEU", "ESP"],
+    "usesYearBranch": false
+  },
+  {
+    "code": "VEHTRK",
+    "name": "Autodesk Vehicle Tracking",
+    "languages": ["DEU", "JPN", "CHS", "FRA", "ITA", "ESP", "ENG", "CHT", "KOR", "RUS", "CSY", "PLK", "PTB", "HUN"],
+    "usesYearBranch": true
+  },
+  {
+    "code": "CIV3D",
+    "name": "Civil 3D",
+    "languages": ["CSY", "CHS", "CHT", "DEU", "ENG", "ESP", "FRA", "HUN", "ITA", "JPN", "KOR", "PLK", "PTB", "RUS"],
+    "usesYearBranch": true
+  },
+  {
+    "code": "C3DGO",
+    "name": "Grading Optimization",
+    "languages": ["CSY", "CHS", "CHT", "DEU", "ENG", "ESP", "FRA", "HUN", "ITA", "JPN", "KOR", "PLK", "PTB", "RUS"],
+    "usesYearBranch": false
+  },
+  {
+    "code": "INFDS",
+    "name": "InfoDrainage",
+    "languages": ["ENG", "ESP", "FRA"],
+    "usesYearBranch": false
+  },
+  {
+    "code": "IWICMS",
+    "name": "InfoWorks ICM",
+    "languages": ["DEU", "ESP", "FRA", "ITA", "JPN"],
+    "usesYearBranch": true
+  },
+  {
+    "code": "IWWSPRO",
+    "name": "InfoWorks Pro",
+    "languages": ["DEU", "ESP", "FRA", "ITA", "JPN"],
+    "usesYearBranch": true
+  },
+  {
+    "code": "INFMDR",
+    "name": "InfraWorks",
+    "languages": ["JPN", "DEU", "FRA", "CHS", "ITA", "ESP", "RUS", "ENG", "PTB"],
+    "usesYearBranch": false
+  },
+  {
+    "code": "RECAP",
+    "name": "ReCap",
+    "languages": ["CHS", "CHT", "CSY", "DEU", "ESP", "FRA", "ITA", "JPN", "KOR", "PLK", "PTB"],
+    "usesYearBranch": false
+  }
+]

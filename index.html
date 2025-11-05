@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Autodesk — Multi-Language Link Opener</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f8; }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  h2 { color: #0078d4; }
+  label { display: block; margin-top: 15px; font-weight: bold; }
+  input, select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; }
+  button { padding: 8px 14px; border: none; background: #0078d4; color: white; font-weight: bold; border-radius: 6px; margin-top: 10px; cursor: pointer; }
+  button.secondary { background: #e5f0fa; color: #0078d4; border: 1px solid #0078d4; }
+  ul { margin-top: 10px; }
+  a { display: block; margin: 5px 0; color: #0b5394; text-decoration: none; word-break: break-all; }
+  #yearContainer, #manualContainer { display: none; } /* hidden by default */
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Autodesk — Multi-Language Link Opener</h2>
+  <p>Select a product or enter a manual staging link. The tool automatically detects single vs multi-branch release.</p>
+
+  <label>Product</label>
+  <select id="productSelect">
+    <option value="">-- Select Product or Other --</option>
+  </select>
+
+  <div id="yearContainer">
+    <label>Release Year</label>
+    <select id="yearSelect"></select>
+  </div>
+
+  <!-- This container will only show when “Other Product” is selected -->
+  <div id="manualContainer">
+    <label>Or Enter Manual Staging Link / Product Name</label>
+    <input id="manualInput" placeholder="https://help-staging.autodesk.com/view/NINCAD/2026/ENU/?guid=... OR PLM">
+  </div>
+
+  <label>GUID</label>
+  <input id="guidInput" placeholder="Enter GUID (e.g. Best_Practices_16)">
+
+  <label>Languages (comma separated)</label>
+  <input id="langsInput" placeholder="ENU,DEU,FRA,CHS,ITA,JPN">
+
+  <button id="buildBtn">Build Links</button>
+  <button id="openAllBtn" class="secondary">Open All</button>
+
+  <p id="status" style="color: green;"></p>
+  <ul id="linksList"></ul>
+</div>
+
+<script>
+let productsData = [];
+const productSelect = document.getElementById('productSelect');
+const yearSelect = document.getElementById('yearSelect');
+const yearContainer = document.getElementById('yearContainer');
+const manualContainer = document.getElementById('manualContainer');
+const manualInput = document.getElementById('manualInput');
+const guidInput = document.getElementById('guidInput');
+const langsInput = document.getElementById('langsInput');
+const buildBtn = document.getElementById('buildBtn');
+const openAllBtn = document.getElementById('openAllBtn');
+const linksList = document.getElementById('linksList');
+const status = document.getElementById('status');
+
+// 🧭 Load products.json
+fetch('./products.json')
+  .then(r => r.json())
+  .then(data => {
+    productsData = data;
+    populateProducts();
+    populateYears();
+  })
+  .catch(() => alert('❌ Failed to load products.json'));
+
+// Populate product dropdown
+function populateProducts() {
+  productsData.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.code;
+    opt.textContent = `${p.code} — ${p.name}`;
+    opt.dataset.usesYearBranch = p.usesYearBranch;
+    productSelect.appendChild(opt);
+  });
+
+  const otherOpt = document.createElement('option');
+  otherOpt.value = 'OTHER';
+  otherOpt.textContent = 'Other Product (Manual Entry)';
+  productSelect.appendChild(otherOpt);
+}
+
+// Populate year dropdown
+function populateYears() {
+  for (let y = 2055; y >= 1990; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    if (y === 2026) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+}
+
+// 🧩 Handle product change
+productSelect.addEventListener('change', () => {
+  const selected = productSelect.selectedOptions[0];
+  if (!selected) return;
+
+  const usesYear = selected.dataset.usesYearBranch === 'true';
+  const isOther = selected.value === 'OTHER';
+
+  // Show or hide sections dynamically
+  yearContainer.style.display = usesYear ? 'block' : 'none';
+  manualContainer.style.display = isOther ? 'block' : 'none';
+
+  // Auto-fill language list for known products
+  const product = productsData.find(p => p.code === productSelect.value);
+  if (product && product.languages) {
+    langsInput.value = product.languages.join(',');
+  } else if (isOther) {
+    langsInput.value = ''; // clear for manual entry
+  }
+});
+
+// 🧮 Build Links
+buildBtn.addEventListener('click', () => {
+  linksList.innerHTML = '';
+  status.textContent = '';
+
+  const productCode = productSelect.value;
+  const manual = manualInput.value.trim();
+  const guid = guidInput.value.trim();
+  const langs = langsInput.value.trim();
+
+  if (!guid) return alert('Please enter a GUID.');
+
+  const langList = langs.split(',').map(l => l.trim().toUpperCase()).filter(Boolean);
+  let baseUrl = '';
+  let year = null;
+
+  if (productCode && productCode !== 'OTHER') {
+    const selected = productSelect.selectedOptions[0];
+    const usesYear = selected.dataset.usesYearBranch === 'true';
+    baseUrl = `https://help-staging.autodesk.com/view/${productCode}`;
+    if (usesYear) year = yearSelect.value || '2026';
+  } else if (manual) {
+    const info = analyzeManual(manual);
+    if (!info) return alert('Invalid manual input.');
+    baseUrl = info.baseUrl;
+    year = info.year;
+  } else {
+    return alert('Please select a product or provide a manual link.');
+  }
+
+  const urls = buildUrls(baseUrl, langList, guid, year);
+  urls.forEach(url => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.textContent = url;
+    li.appendChild(a);
+    linksList.appendChild(li);
+  });
+  status.textContent = `✅ Built ${urls.length} links successfully.`;
+});
+
+// 🧩 URL builder
+function buildUrls(baseUrl, langs, guid, year) {
+  baseUrl = baseUrl.replace(/\/+$/, '');
+  const urls = [];
+  langs.forEach(lang => {
+    if (year) {
+      urls.push(`${baseUrl}/${year}/${lang}/?guid=${encodeURIComponent(guid)}`);
+    } else {
+      urls.push(`${baseUrl}/${lang}/?guid=${encodeURIComponent(guid)}`);
+    }
+  });
+  return urls;
+}
+
+// 🧠 Manual link analyzer
+function analyzeManual(input) {
+  try {
+    const u = new URL(input);
+    const parts = u.pathname.split('/').filter(Boolean);
+    const viewIdx = parts.indexOf('view');
+    if (viewIdx === -1) return null;
+    const afterView = parts.slice(viewIdx + 1);
+    const product = afterView[0];
+    const year = /^\d{4}$/.test(afterView[1]) ? afterView[1] : null;
+    return { baseUrl: `https://help-staging.autodesk.com/view/${product}`, year };
+  } catch {
+    if (/^[A-Z0-9]+$/i.test(input)) {
+      return { baseUrl: `https://help-staging.autodesk.com/view/${input}`, year: null };
+    }
+    return null;
+  }
+}
+
+// 🌐 Open all
+openAllBtn.addEventListener('click', () => {
+  const links = document.querySelectorAll('#linksList a');
+  if (!links.length) return alert('No links built yet.');
+  links.forEach(a => a.click());
+});
+</script>
+
+</body>
+</html>
