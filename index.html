@@ -4,22 +4,100 @@
 <meta charset="utf-8">
 <title>Autodesk — Multi-Language Link Opener</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f8; }
-  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; background: #f4f6f8; }
+  header {
+    background: #0078d4;
+    color: white;
+    padding: 16px 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  header h1 { margin: 0; font-size: 22px; }
+  .top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .quick-link {
+    background: #fff;
+    color: #0078d4;
+    border: 1px solid #0078d4;
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .quick-link:hover {
+    background: #0078d4;
+    color: white;
+  }
+  .container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
   h2 { color: #0078d4; }
   label { display: block; margin-top: 15px; font-weight: bold; }
-  input, select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; }
-  button { padding: 8px 14px; border: none; background: #0078d4; color: white; font-weight: bold; border-radius: 6px; margin-top: 10px; cursor: pointer; }
-  button.secondary { background: #e5f0fa; color: #0078d4; border: 1px solid #0078d4; }
-  ul { margin-top: 10px; }
-  a { display: block; margin: 5px 0; color: #0b5394; text-decoration: none; word-break: break-all; }
-  #yearContainer, #manualContainer { display: none; } /* hidden by default */
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  button {
+    padding: 8px 14px;
+    border: none;
+    background: #0078d4;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  button.secondary {
+    background: #e5f0fa;
+    color: #0078d4;
+    border: 1px solid #0078d4;
+  }
+  ul { margin-top: 10px; padding-left: 18px; }
+  a {
+    display: block;
+    margin: 5px 0;
+    color: #0b5394;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  #yearContainer, #manualContainer { display: none; }
+  #flmOptions { display: none; margin-top: 8px; }
 </style>
 </head>
 <body>
 
+<header>
+  <h1>Autodesk Internal Tools Dashboard</h1>
+  <div class="top-bar">
+    <button class="quick-link" onclick="openAKN()">🔗 AKN Publisher</button>
+
+    <div class="quick-link" onclick="toggleFLM()">📊 FLM Dashboard ▼</div>
+    <select id="flmOptions" onchange="openFLM(this.value)">
+      <option value="">Select FLM Environment</option>
+      <option value="https://flm-dashboard-stg.autodesk.com/fileUuid">Staging</option>
+      <option value="https://flm-dashboard-prd.autodesk.com/fileUuid">Production</option>
+      <option value="https://flm-dashboard-dev.autodesk.com/fileUuid">Development</option>
+    </select>
+
+    <button class="quick-link" onclick="openTridion()">📚 SDL Tridion Docs</button>
+    <button class="quick-link" onclick="openJira()">🧩 JIRA</button>
+  </div>
+</header>
+
 <div class="container">
-  <h2>Autodesk — Multi-Language Link Opener</h2>
+  <h2>Multi-Language Link Opener</h2>
   <p>Select a product or enter a manual staging link. The tool automatically detects single vs multi-branch release.</p>
 
   <label>Product</label>
@@ -32,7 +110,6 @@
     <select id="yearSelect"></select>
   </div>
 
-  <!-- This container will only show when “Other Product” is selected -->
   <div id="manualContainer">
     <label>Or Enter Manual Staging Link / Product Name</label>
     <input id="manualInput" placeholder="https://help-staging.autodesk.com/view/NINCAD/2026/ENU/?guid=... OR PLM">
@@ -52,6 +129,26 @@
 </div>
 
 <script>
+// 🌐 Quick Links
+function openAKN() {
+  window.open("https://help.autodesk.com", "_blank");
+}
+function toggleFLM() {
+  const sel = document.getElementById("flmOptions");
+  sel.style.display = sel.style.display === "none" ? "block" : "none";
+}
+function openFLM(url) {
+  if (url) window.open(url, "_blank");
+  document.getElementById("flmOptions").selectedIndex = 0;
+}
+function openTridion() {
+  window.open("https://tridiondocs-loc.autodesk.com/ISHCM/#app=sc&entry=home", "_blank");
+}
+function openJira() {
+  window.open("https://jira.autodesk.com/secure/Dashboard.jspa", "_blank");
+}
+
+// ---------------- Your existing logic -----------------
 let productsData = [];
 const productSelect = document.getElementById('productSelect');
 const yearSelect = document.getElementById('yearSelect');
@@ -110,16 +207,14 @@ productSelect.addEventListener('change', () => {
   const usesYear = selected.dataset.usesYearBranch === 'true';
   const isOther = selected.value === 'OTHER';
 
-  // Show or hide sections dynamically
   yearContainer.style.display = usesYear ? 'block' : 'none';
   manualContainer.style.display = isOther ? 'block' : 'none';
 
-  // Auto-fill language list for known products
   const product = productsData.find(p => p.code === productSelect.value);
   if (product && product.languages) {
     langsInput.value = product.languages.join(',');
   } else if (isOther) {
-    langsInput.value = ''; // clear for manual entry
+    langsInput.value = '';
   }
 });
 
@@ -164,7 +259,6 @@ buildBtn.addEventListener('click', () => {
   status.textContent = `✅ Built ${urls.length} links successfully.`;
 });
 
-// 🧩 URL builder
 function buildUrls(baseUrl, langs, guid, year) {
   baseUrl = baseUrl.replace(/\/+$/, '');
   const urls = [];
@@ -178,7 +272,6 @@ function buildUrls(baseUrl, langs, guid, year) {
   return urls;
 }
 
-// 🧠 Manual link analyzer
 function analyzeManual(input) {
   try {
     const u = new URL(input);
@@ -197,7 +290,6 @@ function analyzeManual(input) {
   }
 }
 
-// 🌐 Open all
 openAllBtn.addEventListener('click', () => {
   const links = document.querySelectorAll('#linksList a');
   if (!links.length) return alert('No links built yet.');
