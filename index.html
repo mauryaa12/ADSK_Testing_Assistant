@@ -22,29 +22,37 @@
     position: relative;
   }
   .quick-link {
+    flex: 1 1 160px;
+    text-align: center;
     background: #fff;
     color: #0078d4;
     border: 1px solid #0078d4;
     border-radius: 6px;
-    padding: 8px 14px;
+    padding: 10px 14px;
     cursor: pointer;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    min-width: 160px;
+    max-width: 180px;
     position: relative;
   }
-  .quick-link:hover { background: #0078d4; color: white; }
+  .quick-link:hover {
+    background: #0078d4;
+    color: white;
+  }
+
   /* Dropdown styling */
   .dropdown {
     display: none;
     position: absolute;
-    top: 100%;
+    top: 105%;
     left: 0;
-    margin-top: 5px;
     background: white;
     border: 1px solid #0078d4;
     border-radius: 6px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     z-index: 200;
+    min-width: 180px;
   }
   .dropdown button {
     display: block;
@@ -52,7 +60,7 @@
     color: #0078d4;
     border: none;
     padding: 8px 14px;
-    width: 180px;
+    width: 100%;
     text-align: left;
     cursor: pointer;
     font-weight: 600;
@@ -61,6 +69,7 @@
     background: #e5f0fa;
   }
 
+  /* Main container */
   .container {
     max-width: 900px;
     margin: 30px auto;
@@ -112,7 +121,7 @@
   <div class="top-bar">
     <button class="quick-link" onclick="openAKN()">🔗 AKN Publisher</button>
 
-    <div class="quick-link" id="flmDropdownBtn" onclick="toggleFLM()">📊 FLM Dashboard ▼
+    <div class="quick-link" id="flmDropdownBtn" onclick="toggleFLM(event)">📊 FLM Dashboard ▼
       <div class="dropdown" id="flmDropdown">
         <button onclick="openFLM('https://flm-dashboard-stg.autodesk.com/fileUuid')">Staging Dashboard</button>
         <button onclick="openFLM('https://flm-dashboard-prd.autodesk.com/fileUuid')">Production Dashboard</button>
@@ -161,9 +170,10 @@
 </div>
 
 <script>
-// 🌐 Quick Links
+// Quick Links
 function openAKN() { window.open("https://help.autodesk.com", "_blank"); }
-function toggleFLM() {
+function toggleFLM(e) {
+  e.stopPropagation();
   const dropdown = document.getElementById("flmDropdown");
   dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
 }
@@ -173,15 +183,13 @@ function openFLM(url) {
 }
 function openTridion() { window.open("https://tridiondocs-loc.autodesk.com/ISHCM/#app=sc&entry=home", "_blank"); }
 function openJira() { window.open("https://jira.autodesk.com/secure/Dashboard.jspa", "_blank"); }
-
-// Hide FLM dropdown when clicking outside
-document.addEventListener("click", function(e) {
+document.addEventListener("click", (e) => {
   const dropdown = document.getElementById("flmDropdown");
   const btn = document.getElementById("flmDropdownBtn");
   if (!btn.contains(e.target)) dropdown.style.display = "none";
 });
 
-// ---------------- Core Logic -----------------
+// Core logic
 let productsData = [];
 const productSelect = document.getElementById('productSelect');
 const yearSelect = document.getElementById('yearSelect');
@@ -196,14 +204,10 @@ const openAllBtn = document.getElementById('openAllBtn');
 const linksList = document.getElementById('linksList');
 const status = document.getElementById('status');
 
-// 🧭 Load products.json
+// Load products.json
 fetch('./products.json')
   .then(r => r.json())
-  .then(data => {
-    productsData = data;
-    populateProducts();
-    populateYears();
-  })
+  .then(data => { productsData = data; populateProducts(); populateYears(); })
   .catch(() => alert('❌ Failed to load products.json'));
 
 function populateProducts() {
@@ -214,7 +218,6 @@ function populateProducts() {
     opt.dataset.usesYearBranch = p.usesYearBranch;
     productSelect.appendChild(opt);
   });
-
   const otherOpt = document.createElement('option');
   otherOpt.value = 'OTHER';
   otherOpt.textContent = 'Other Product (Manual Entry)';
@@ -234,13 +237,10 @@ function populateYears() {
 productSelect.addEventListener('change', () => {
   const selected = productSelect.selectedOptions[0];
   if (!selected) return;
-
   const usesYear = selected.dataset.usesYearBranch === 'true';
   const isOther = selected.value === 'OTHER';
-
   yearContainer.style.display = usesYear ? 'block' : 'none';
   manualContainer.style.display = isOther ? 'block' : 'none';
-
   const product = productsData.find(p => p.code === productSelect.value);
   if (product && product.languages) langsInput.value = product.languages.join(',');
   else if (isOther) langsInput.value = '';
@@ -249,21 +249,17 @@ productSelect.addEventListener('change', () => {
 function handleBuild(env) {
   linksList.innerHTML = '';
   status.textContent = '';
-
   const productCode = productSelect.value;
   const manual = manualInput.value.trim();
   const guid = guidInput.value.trim();
   const langs = langsInput.value.trim();
-
   if (!guid) return alert('Please enter a GUID.');
-
   const langList = langs.split(',').map(l => l.trim().toUpperCase()).filter(Boolean);
   let baseUrl = '';
   let year = null;
   const root = env === 'staging'
     ? 'https://help-staging.autodesk.com/view'
     : 'https://help.autodesk.com/view';
-
   if (productCode && productCode !== 'OTHER') {
     const selected = productSelect.selectedOptions[0];
     const usesYear = selected.dataset.usesYearBranch === 'true';
@@ -275,7 +271,6 @@ function handleBuild(env) {
     baseUrl = info.baseUrl.replace('help-staging.autodesk.com', env === 'staging' ? 'help-staging.autodesk.com' : 'help.autodesk.com');
     year = info.year;
   } else return alert('Please select a product or provide a manual link.');
-
   const urls = buildUrls(baseUrl, langList, guid, year);
   urls.forEach(url => {
     const li = document.createElement('li');
@@ -310,9 +305,7 @@ function analyzeManual(input) {
     const year = /^\d{4}$/.test(afterView[1]) ? afterView[1] : null;
     return { baseUrl: `https://help-staging.autodesk.com/view/${product}`, year };
   } catch {
-    if (/^[A-Z0-9]+$/i.test(input)) {
-      return { baseUrl: `https://help-staging.autodesk.com/view/${input}`, year: null };
-    }
+    if (/^[A-Z0-9]+$/i.test(input)) return { baseUrl: `https://help-staging.autodesk.com/view/${input}`, year: null };
     return null;
   }
 }
