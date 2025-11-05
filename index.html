@@ -10,30 +10,28 @@
     color: white;
     padding: 16px 20px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    position: relative;
-    z-index: 100;
   }
   header h1 { margin: 0; font-size: 22px; }
   .top-bar {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 10px;
-    position: relative;
+    margin-top: 12px;
+    justify-content: flex-start;
   }
   .quick-link {
-    flex: 1 1 160px;
-    text-align: center;
     background: #fff;
     color: #0078d4;
     border: 1px solid #0078d4;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 12px 10px;
     cursor: pointer;
     font-weight: 600;
+    text-align: center;
     transition: all 0.2s ease;
-    min-width: 160px;
-    max-width: 180px;
+    width: 200px;
+    height: 48px;
+    line-height: 24px;
     position: relative;
   }
   .quick-link:hover {
@@ -41,18 +39,19 @@
     color: white;
   }
 
-  /* Dropdown styling */
+  /* Dropdown Styling */
   .dropdown {
     display: none;
     position: absolute;
-    top: 105%;
-    left: 0;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
     background: white;
     border: 1px solid #0078d4;
     border-radius: 6px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     z-index: 200;
-    min-width: 180px;
+    width: 200px;
   }
   .dropdown button {
     display: block;
@@ -183,6 +182,7 @@ function openFLM(url) {
 }
 function openTridion() { window.open("https://tridiondocs-loc.autodesk.com/ISHCM/#app=sc&entry=home", "_blank"); }
 function openJira() { window.open("https://jira.autodesk.com/secure/Dashboard.jspa", "_blank"); }
+
 document.addEventListener("click", (e) => {
   const dropdown = document.getElementById("flmDropdown");
   const btn = document.getElementById("flmDropdownBtn");
