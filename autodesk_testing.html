@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Autodesk Testing Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="nav-title">TP Dashboard</div>
+</nav>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <a href="index.html">🏠 Home</a>
+        <a href="autodesk_testing.html">🧪 Autodesk Testing Assistant</a>
+        <a href="product_details.html">📘 Product Details</a>
+        <a href="product_management.html">🛠 Product Management</a>
+    </aside>
+
+    <main class="main-content">
+
+        <h2 class="page-title">Autodesk — Multi-Language Link Opener</h2>
+
+        <div class="tool-box">
+
+            <p>Select a product, enter GUID, and build links.</p>
+
+            <label>Product</label>
+            <select id="productSelect"></select>
+
+            <div id="yearContainer" style="display:none;">
+                <label>Release Year</label>
+                <select id="yearSelect"></select>
+            </div>
+
+            <div id="manualContainer" style="display:none;">
+                <label>Manual Staging Link</label>
+                <input id="manualInput" placeholder="https://help-staging.autodesk.com/view/...">
+            </div>
+
+            <label>GUID</label>
+            <input id="guidInput" placeholder="Enter GUID">
+
+            <label>Languages</label>
+            <input id="langsInput" placeholder="ENU,DEU,FRA,CHS">
+
+            <button id="buildBtn">Build Links</button>
+            <button id="openAllBtn">Open All</button>
+
+            <p id="status"></p>
+            <ul id="linksList"></ul>
+
+        </div>
+
+    </main>
+</div>
+
+<script>
+    const PRODUCT_MASTER_URL = "data/product_master.json";
+</script>
+
+<script src="js/autodesk_testing.js"></script>
+
+</body>
+</html>
