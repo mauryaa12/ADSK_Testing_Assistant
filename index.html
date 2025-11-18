@@ -1,11 +1,48 @@
-<!-- index.html -->
-<?php include 'static_base.html'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TP Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
 
-<h2>Welcome to TP Dashboard</h2>
+<body>
 
-<div class="grid">
-    <a class="box" href="autodesk_testing.html">Autodesk Testing Assistant</a>
-    <a class="box" href="product_details.html">Product Details</a>
-    <a class="box" href="product_management.html">Product Management</a>
-    <a class="box" href="coming_soon.html">Coming Soon</a>
-</div>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-title">TP Dashboard</div>
+        <div class="nav-right">
+            <a href="#" class="login-btn">Login</a>
+        </div>
+    </nav>
+
+    <!-- MAIN LAYOUT -->
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <a href="index.html">🏠 Home</a>
+            <a href="autodesk_testing.html">🧪 Autodesk Testing Assistant</a>
+            <a href="product_details.html">📘 Product Details</a>
+            <a href="product_management.html">🛠 Product Management</a>
+            <a href="coming_soon.html">⚙ Coming Soon</a>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="main-content">
+
+            <h2>Welcome to TP Dashboard</h2>
+
+            <div class="grid">
+                <a class="box" href="autodesk_testing.html">Autodesk Testing Assistant</a>
+                <a class="box" href="product_details.html">Product Details</a>
+                <a class="box" href="product_management.html">Product Management</a>
+                <a class="box" href="coming_soon.html">Coming Soon</a>
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+</html>
