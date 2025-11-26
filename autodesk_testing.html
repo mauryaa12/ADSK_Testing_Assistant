@@ -81,7 +81,7 @@
 
         <div class="container">
             <h2>Autodesk — Multi-Language Link Opener</h2>
-            <p>Select a product or enter a manual staging link. The tool automatically detects single vs multi-branch release.</p>
+            <p>Select a product or enter a manual staging/production link. The tool automatically detects single vs multi-branch release.</p>
 
             <label>Product</label>
             <select id="productSelect">
@@ -94,8 +94,8 @@
             </div>
 
             <div id="manualContainer">
-                <label>Or Enter Manual Staging Link / Product Name</label>
-                <input id="manualInput" placeholder="https://help-staging.autodesk.com/view/NINCAD/2026/ENU/?guid=... OR PLM">
+                <label>Or Enter Manual Link / Product Name</label>
+                <input id="manualInput" placeholder="https://help-staging.autodesk.com/view/NINCAD/2026/ENU/?guid=... OR https://help.autodesk.com/... OR NINCAD">
             </div>
 
             <label>GUID</label>
@@ -104,7 +104,9 @@
             <label>Languages (comma separated)</label>
             <input id="langsInput" placeholder="ENU,DEU,FRA,CHS,ITA,JPN">
 
-            <button id="buildBtn">Build Links</button>
+            <!-- Buttons row -->
+            <button id="buildStagingBtn">Build Staging Links</button>
+            <button id="buildProdBtn" class="secondary">Build Prod Links</button>
             <button id="openAllBtn" class="secondary">Open All</button>
 
             <p id="status" style="color: green; font-weight:600;"></p>
@@ -120,17 +122,18 @@
 
 let productsData = [];
 
-const productSelect = document.getElementById('productSelect');
-const yearSelect = document.getElementById('yearSelect');
-const yearContainer = document.getElementById('yearContainer');
+const productSelect   = document.getElementById('productSelect');
+const yearSelect      = document.getElementById('yearSelect');
+const yearContainer   = document.getElementById('yearContainer');
 const manualContainer = document.getElementById('manualContainer');
-const manualInput = document.getElementById('manualInput');
-const guidInput = document.getElementById('guidInput');
-const langsInput = document.getElementById('langsInput');
-const buildBtn = document.getElementById('buildBtn');
-const openAllBtn = document.getElementById('openAllBtn');
-const linksList = document.getElementById('linksList');
-const status = document.getElementById('status');
+const manualInput     = document.getElementById('manualInput');
+const guidInput       = document.getElementById('guidInput');
+const langsInput      = document.getElementById('langsInput');
+const buildStagingBtn = document.getElementById('buildStagingBtn');
+const buildProdBtn    = document.getElementById('buildProdBtn');
+const openAllBtn      = document.getElementById('openAllBtn');
+const linksList       = document.getElementById('linksList');
+const status          = document.getElementById('status');
 
 
 // ================= LOAD PRODUCTS =================
@@ -193,11 +196,11 @@ productSelect.addEventListener('change', function () {
     if (!selected) return;
 
     const usesYear = selected.dataset.usesYearBranch === 'true';
-    const isOther = selected.value === 'OTHER';
+    const isOther  = selected.value === 'OTHER';
 
     // Show / hide
-    yearContainer.style.display = usesYear ? 'block' : 'none';
-    manualContainer.style.display = isOther ? 'block' : 'none';
+    yearContainer.style.display   = usesYear ? 'block' : 'none';
+    manualContainer.style.display = isOther  ? 'block' : 'none';
 
     // ✅ AUTO FILL LANGUAGE
     if (selected.dataset.languages && !isOther) {
@@ -213,16 +216,26 @@ productSelect.addEventListener('change', function () {
 });
 
 
-// ================= BUILD LINKS =================
-buildBtn.addEventListener('click', () => {
+// ================= ENV-SPECIFIC BUILD HANDLERS =================
+buildStagingBtn.addEventListener('click', () => {
+    buildLinks('staging');   // https://help-staging.autodesk.com
+});
+
+buildProdBtn.addEventListener('click', () => {
+    buildLinks('prod');      // https://help.autodesk.com
+});
+
+
+// ================= MAIN BUILD FUNCTION =================
+function buildLinks(env) {
 
     linksList.innerHTML = '';
-    status.textContent = '';
+    status.textContent  = '';
 
     const productCode = productSelect.value;
-    const manual = manualInput.value.trim();
-    const guid = guidInput.value.trim();
-    const langs = langsInput.value.trim();
+    const manual      = manualInput.value.trim();
+    const guid        = guidInput.value.trim();
+    const langs       = langsInput.value.trim();
 
     if (!guid) {
         alert('❗ Please enter a GUID');
@@ -234,20 +247,22 @@ buildBtn.addEventListener('click', () => {
                               .filter(Boolean);
 
     let baseUrl = '';
-    let year = null;
+    let year    = null;
 
+    // Product selected from dropdown
     if (productCode && productCode !== 'OTHER') {
 
         const selected = productSelect.selectedOptions[0];
         const usesYear = selected.dataset.usesYearBranch === 'true';
 
-        baseUrl = `https://help-staging.autodesk.com/view/${productCode}`;
+        baseUrl = getBaseUrl(productCode, env);
 
         if (usesYear) {
             year = yearSelect.value || '2026';
         }
 
     } 
+    // Manual input (URL or product code)
     else if (manual) {
 
         const info = analyzeManual(manual);
@@ -257,12 +272,12 @@ buildBtn.addEventListener('click', () => {
             return;
         }
 
-        baseUrl = info.baseUrl;
-        year = info.year;
+        baseUrl = getBaseUrl(info.product, env);
+        year    = info.year;
 
     } 
     else {
-        alert('❗ Select a product or enter a manual link');
+        alert('❗ Select a product or enter a manual link / product code');
         return;
     }
 
@@ -270,17 +285,26 @@ buildBtn.addEventListener('click', () => {
 
     urls.forEach(url => {
         const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
+        const a  = document.createElement('a');
+        a.href        = url;
+        a.target      = '_blank';
         a.textContent = url;
         li.appendChild(a);
         linksList.appendChild(li);
     });
 
-    status.textContent = `✅ ${urls.length} links generated successfully`;
+    const envLabel = env === 'prod' ? 'production' : 'staging';
+    status.textContent = `✅ ${urls.length} ${envLabel} links generated successfully`;
+}
 
-});
+
+// ================= BASE URL BY ENV =================
+function getBaseUrl(productCode, env) {
+    const host = (env === 'prod')
+        ? 'https://help.autodesk.com'
+        : 'https://help-staging.autodesk.com';
+    return `${host}/view/${productCode}`;
+}
 
 
 // ================= URL BUILDER =================
@@ -302,6 +326,10 @@ function buildUrls(baseUrl, langs, guid, year) {
 
 
 // ================= MANUAL LINK ANALYZER =================
+// Accepts:
+//   - full staging URL, e.g. https://help-staging.autodesk.com/view/CONNECT/ENU/?guid=Best_Practices_16
+//   - full prod URL,    e.g. https://help.autodesk.com/view/CONNECT/ENU/?guid=Best_Practices_16
+//   - or plain product code, e.g. CONNECT
 function analyzeManual(input) {
 
     try {
@@ -313,19 +341,18 @@ function analyzeManual(input) {
 
         const afterView = parts.slice(viewIndex + 1);
 
-        const product = afterView[0];
-        const year = /^\d{4}$/.test(afterView[1]) ? afterView[1] : null;
+        const product = afterView[0];                      // CONNECT, NINCAD, etc.
+        const year    = /^\d{4}$/.test(afterView[1]) 
+                        ? afterView[1] 
+                        : null;
 
-        return { 
-            baseUrl: `https://help-staging.autodesk.com/view/${product}`, 
-            year 
-        };
+        return { product, year };
     } 
     catch {
-
+        // Not a URL → maybe just product code like "CONNECT"
         if (/^[A-Z0-9]+$/i.test(input)) {
             return { 
-                baseUrl: `https://help-staging.autodesk.com/view/${input}`, 
+                product: input,
                 year: null 
             };
         }
