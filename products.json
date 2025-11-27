@@ -6,7 +6,7 @@
     "usesYearBranch": false,
     "method": "TRIDION",
     "hasBetaStaging": false,
-    "git_link": "",
+    "git_link": "https://git.autodesk.com/learning-content/desktop-connect",
     "wiki_link": "",
     "tridion_link": ""
   },
@@ -17,7 +17,7 @@
     "usesYearBranch": false,
     "method": "TRIDION",
     "hasBetaStaging": false,
-    "git_link": "",
+    "git_link": "https://git.autodesk.com/learning-content/plm-360",
     "wiki_link": "",
     "tridion_link": ""
   },
@@ -130,7 +130,7 @@
     "git_link": "",
     "wiki_link": "",
     "tridion_link": ""
-  }
+  },
   {
  
     "code": "MDB",
