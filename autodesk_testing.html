@@ -39,6 +39,10 @@
             color: #0078d4; 
             border: 1px solid #0078d4; 
         }
+        .container button.small-btn {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
         .container ul { margin-top: 10px; padding-left:20px; }
         .container a { 
             display: block; 
@@ -50,6 +54,21 @@
         #yearContainer, 
         #manualContainer { 
             display: none; 
+        }
+
+        .inline-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .inline-row label {
+            margin-top: 0;
+            min-width: 100px;
+        }
+        .env-heading {
+            font-weight: 700;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -81,32 +100,55 @@
 
         <div class="container">
             <h2>Autodesk — Multi-Language Link Opener</h2>
-            <p>Select a product or enter a manual staging/production link. The tool automatically detects single vs multi-branch release.</p>
+            <p>Select a product or enter a manual link. The tool automatically detects single vs multi-branch release and can generate <b>Prod / Staging / Beta-Staging</b> links.</p>
 
+            <!-- PRODUCT -->
             <label>Product</label>
             <select id="productSelect">
                 <option value="">-- Select Product or Other --</option>
             </select>
 
+            <!-- METHOD INFO -->
+            <div class="inline-row" id="methodContainer" style="display:none;">
+                <label>Method</label>
+                <span id="methodLabel">–</span>
+            </div>
+
+            <!-- GIT / WIKI / TRIDION QUICK LINKS -->
+            <div class="inline-row" id="quickLinksContainer" style="display:none;">
+                <label>Resources</label>
+                <div>
+                    <button type="button" id="gitBtn" class="secondary small-btn">Open Git Page</button>
+                    <button type="button" id="wikiBtn" class="secondary small-btn">Open Wiki</button>
+                    <button type="button" id="tridionBtn" class="secondary small-btn">Open Tridion</button>
+                </div>
+            </div>
+
+            <!-- YEAR -->
             <div id="yearContainer">
                 <label>Release Year</label>
                 <select id="yearSelect"></select>
             </div>
 
+            <!-- MANUAL -->
             <div id="manualContainer">
                 <label>Or Enter Manual Link / Product Name</label>
                 <input id="manualInput" placeholder="https://help-staging.autodesk.com/view/NINCAD/2026/ENU/?guid=... OR https://help.autodesk.com/... OR NINCAD">
             </div>
 
+            <!-- GUID -->
             <label>GUID</label>
-            <input id="guidInput" placeholder="Enter GUID (e.g. Best_Practices_16)">
+            <input id="guidInput" placeholder="Enter GUID (e.g. MDB_WHATSNEW_2026_3_CPT)">
 
+            <!-- LANGS -->
             <label>Languages (comma separated)</label>
             <input id="langsInput" placeholder="ENU,DEU,FRA,CHS,ITA,JPN">
 
             <!-- Buttons row -->
             <button id="buildStagingBtn">Build Staging Links</button>
+            <button id="buildBetaBtn" class="secondary" style="display:none;">Build Beta-Staging Links</button>
             <button id="buildProdBtn" class="secondary">Build Prod Links</button>
+            <button id="buildAllBtn" class="secondary" style="display:none;">Build All (Prod + Staging + Beta)</button>
             <button id="openAllBtn" class="secondary">Open All</button>
 
             <p id="status" style="color: green; font-weight:600;"></p>
@@ -119,21 +161,29 @@
 
 <!-- ================= SCRIPT ================= -->
 <script>
-
 let productsData = [];
 
-const productSelect   = document.getElementById('productSelect');
-const yearSelect      = document.getElementById('yearSelect');
-const yearContainer   = document.getElementById('yearContainer');
-const manualContainer = document.getElementById('manualContainer');
-const manualInput     = document.getElementById('manualInput');
-const guidInput       = document.getElementById('guidInput');
-const langsInput      = document.getElementById('langsInput');
-const buildStagingBtn = document.getElementById('buildStagingBtn');
-const buildProdBtn    = document.getElementById('buildProdBtn');
-const openAllBtn      = document.getElementById('openAllBtn');
-const linksList       = document.getElementById('linksList');
-const status          = document.getElementById('status');
+const productSelect        = document.getElementById('productSelect');
+const yearSelect           = document.getElementById('yearSelect');
+const yearContainer        = document.getElementById('yearContainer');
+const manualContainer      = document.getElementById('manualContainer');
+const manualInput          = document.getElementById('manualInput');
+const guidInput            = document.getElementById('guidInput');
+const langsInput           = document.getElementById('langsInput');
+const buildStagingBtn      = document.getElementById('buildStagingBtn');
+const buildProdBtn         = document.getElementById('buildProdBtn');
+const buildBetaBtn         = document.getElementById('buildBetaBtn');
+const buildAllBtn          = document.getElementById('buildAllBtn');
+const openAllBtn           = document.getElementById('openAllBtn');
+const linksList            = document.getElementById('linksList');
+const status               = document.getElementById('status');
+
+const methodContainer      = document.getElementById('methodContainer');
+const methodLabel          = document.getElementById('methodLabel');
+const quickLinksContainer  = document.getElementById('quickLinksContainer');
+const gitBtn               = document.getElementById('gitBtn');
+const wikiBtn              = document.getElementById('wikiBtn');
+const tridionBtn           = document.getElementById('tridionBtn');
 
 
 // ================= LOAD PRODUCTS =================
@@ -152,7 +202,6 @@ fetch('./products.json')
 
 // ================= POPULATE PRODUCTS =================
 function populateProducts() {
-
     productsData.forEach(product => {
         const option = document.createElement('option');
 
@@ -164,6 +213,26 @@ function populateProducts() {
 
         if (Array.isArray(product.languages)) {
             option.dataset.languages = product.languages.join(',');
+        }
+
+        if (product.hasBetaStaging === true) {
+            option.dataset.hasBetaStaging = 'true';
+        }
+
+        if (product.method) {
+            option.dataset.method = product.method;
+        }
+
+        if (product.git_link) {
+            option.dataset.gitLink = product.git_link;
+        }
+
+        if (product.wiki_link) {
+            option.dataset.wikiLink = product.wiki_link;
+        }
+
+        if (product.tridion_link) {
+            option.dataset.tridionLink = product.tridion_link;
         }
 
         productSelect.appendChild(option);
@@ -191,28 +260,73 @@ function populateYears() {
 
 // ================= PRODUCT CHANGE =================
 productSelect.addEventListener('change', function () {
-
     const selected = productSelect.selectedOptions[0];
     if (!selected) return;
 
     const usesYear = selected.dataset.usesYearBranch === 'true';
     const isOther  = selected.value === 'OTHER';
+    const hasBeta  = selected.dataset.hasBetaStaging === 'true';
 
-    // Show / hide
+    // Show / hide year + manual
     yearContainer.style.display   = usesYear ? 'block' : 'none';
     manualContainer.style.display = isOther  ? 'block' : 'none';
+
+    // Show / hide "Build All" only for manual mode
+    buildAllBtn.style.display = isOther ? 'inline-block' : 'none';
 
     // ✅ AUTO FILL LANGUAGE
     if (selected.dataset.languages && !isOther) {
         langsInput.value = selected.dataset.languages;
-    } 
-    else if (isOther) {
-        langsInput.value = '';
-    } 
-    else {
+    } else {
         langsInput.value = '';
     }
 
+    // Method display
+    const method = selected.dataset.method || '';
+    if (method) {
+        methodContainer.style.display = 'flex';
+        methodLabel.textContent = method;
+    } else {
+        methodContainer.style.display = 'none';
+        methodLabel.textContent = '–';
+    }
+
+    // Quick links (Git / Wiki / Tridion) only for real products
+    if (!isOther) {
+        quickLinksContainer.style.display = 'flex';
+
+        gitBtn.onclick = () => {
+            const link = selected.dataset.gitLink;
+            if (link) {
+                window.open(link, '_blank');
+            } else {
+                alert('Git link not configured for this product.');
+            }
+        };
+
+        wikiBtn.onclick = () => {
+            const link = selected.dataset.wikiLink;
+            if (link) {
+                window.open(link, '_blank');
+            } else {
+                alert('Wiki link not configured for this product.');
+            }
+        };
+
+        tridionBtn.onclick = () => {
+            const link = selected.dataset.tridionLink;
+            if (link) {
+                window.open(link, '_blank');
+            } else {
+                alert('Tridion link not configured for this product.');
+            }
+        };
+    } else {
+        quickLinksContainer.style.display = 'none';
+    }
+
+    // Beta button only for products that have beta staging configured
+    buildBetaBtn.style.display = hasBeta ? 'inline-block' : 'none';
 });
 
 
@@ -225,13 +339,18 @@ buildProdBtn.addEventListener('click', () => {
     buildLinks('prod');      // https://help.autodesk.com
 });
 
+buildBetaBtn.addEventListener('click', () => {
+    buildLinks('beta');      // https://help-staging-beta.autodesk.com
+});
 
-// ================= MAIN BUILD FUNCTION =================
-function buildLinks(env) {
+// For manual mode: build all 3 (Prod + Staging + Beta)
+buildAllBtn.addEventListener('click', () => {
+    buildAllEnvs();
+});
 
-    linksList.innerHTML = '';
-    status.textContent  = '';
 
+// ================= CORE URL COMPUTATION =================
+function computeUrls(env) {
     const productCode = productSelect.value;
     const manual      = manualInput.value.trim();
     const guid        = guidInput.value.trim();
@@ -239,19 +358,23 @@ function buildLinks(env) {
 
     if (!guid) {
         alert('❗ Please enter a GUID');
-        return;
+        return null;
     }
 
     const languageList = langs.split(',')
                               .map(l => l.trim().toUpperCase())
                               .filter(Boolean);
 
+    if (!languageList.length) {
+        alert('❗ Please enter at least one language code');
+        return null;
+    }
+
     let baseUrl = '';
     let year    = null;
 
     // Product selected from dropdown
     if (productCode && productCode !== 'OTHER') {
-
         const selected = productSelect.selectedOptions[0];
         const usesYear = selected.dataset.usesYearBranch === 'true';
 
@@ -264,12 +387,11 @@ function buildLinks(env) {
     } 
     // Manual input (URL or product code)
     else if (manual) {
-
         const info = analyzeManual(manual);
 
         if (!info) {
             alert('❌ Invalid manual input');
-            return;
+            return null;
         }
 
         baseUrl = getBaseUrl(info.product, env);
@@ -278,10 +400,71 @@ function buildLinks(env) {
     } 
     else {
         alert('❗ Select a product or enter a manual link / product code');
-        return;
+        return null;
     }
 
     const urls = buildUrls(baseUrl, languageList, guid, year);
+
+    const envLabelMap = {
+        prod: 'production',
+        staging: 'staging',
+        beta: 'beta-staging'
+    };
+
+    return {
+        urls,
+        envLabel: envLabelMap[env] || env
+    };
+}
+
+
+// ================= SINGLE-ENV BUILD FUNCTION =================
+function buildLinks(env) {
+    linksList.innerHTML = '';
+    status.textContent  = '';
+
+    const result = computeUrls(env);
+    if (!result) return;
+
+    appendUrlsToList(result.urls, result.envLabel);
+    status.textContent = `✅ ${result.urls.length} ${result.envLabel} links generated successfully`;
+}
+
+
+// ================= BUILD ALL ENVS (Prod + Staging + Beta) =================
+function buildAllEnvs() {
+    linksList.innerHTML = '';
+    status.textContent  = '';
+
+    const envs = ['prod', 'staging', 'beta'];
+    const labelMap = {
+        prod: 'Production',
+        staging: 'Staging',
+        beta: 'Beta-Staging'
+    };
+
+    let total = 0;
+
+    for (const env of envs) {
+        const result = computeUrls(env);
+        if (!result) return; // if validation fails once, stop
+
+        appendUrlsToList(result.urls, labelMap[env]);
+        total += result.urls.length;
+    }
+
+    status.textContent = `✅ ${total} links generated for Prod + Staging + Beta`;
+}
+
+
+// ================= APPEND URLS TO LIST =================
+function appendUrlsToList(urls, label) {
+    if (!urls || !urls.length) return;
+
+    const headingLi = document.createElement('li');
+    headingLi.textContent = label + ':';
+    headingLi.className = 'env-heading';
+    linksList.appendChild(headingLi);
 
     urls.forEach(url => {
         const li = document.createElement('li');
@@ -292,24 +475,25 @@ function buildLinks(env) {
         li.appendChild(a);
         linksList.appendChild(li);
     });
-
-    const envLabel = env === 'prod' ? 'production' : 'staging';
-    status.textContent = `✅ ${urls.length} ${envLabel} links generated successfully`;
 }
 
 
 // ================= BASE URL BY ENV =================
 function getBaseUrl(productCode, env) {
-    const host = (env === 'prod')
-        ? 'https://help.autodesk.com'
-        : 'https://help-staging.autodesk.com';
+    let host;
+    if (env === 'prod') {
+        host = 'https://help.autodesk.com';
+    } else if (env === 'beta') {
+        host = 'https://help-staging-beta.autodesk.com';
+    } else {
+        host = 'https://help-staging.autodesk.com';
+    }
     return `${host}/view/${productCode}`;
 }
 
 
 // ================= URL BUILDER =================
 function buildUrls(baseUrl, langs, guid, year) {
-
     baseUrl = baseUrl.replace(/\/+$/, '');
     const urls = [];
 
@@ -327,11 +511,9 @@ function buildUrls(baseUrl, langs, guid, year) {
 
 // ================= MANUAL LINK ANALYZER =================
 // Accepts:
-//   - full staging URL, e.g. https://help-staging.autodesk.com/view/CONNECT/ENU/?guid=Best_Practices_16
-//   - full prod URL,    e.g. https://help.autodesk.com/view/CONNECT/ENU/?guid=Best_Practices_16
+//   - full prod / staging / beta URL, e.g. https://help-staging.autodesk.com/view/CONNECT/ENU/?guid=...
 //   - or plain product code, e.g. CONNECT
 function analyzeManual(input) {
-
     try {
         const u = new URL(input);
         const parts = u.pathname.split('/').filter(Boolean);
@@ -341,10 +523,8 @@ function analyzeManual(input) {
 
         const afterView = parts.slice(viewIndex + 1);
 
-        const product = afterView[0];                      // CONNECT, NINCAD, etc.
-        const year    = /^\d{4}$/.test(afterView[1]) 
-                        ? afterView[1] 
-                        : null;
+        const product = afterView[0]; // CONNECT, NINCAD, etc.
+        const year    = /^\d{4}$/.test(afterView[1]) ? afterView[1] : null;
 
         return { product, year };
     } 
@@ -358,13 +538,11 @@ function analyzeManual(input) {
         }
         return null;
     }
-
 }
 
 
 // ================= OPEN ALL =================
 openAllBtn.addEventListener('click', () => {
-
     const links = document.querySelectorAll('#linksList a');
 
     if (!links.length) {
@@ -374,7 +552,6 @@ openAllBtn.addEventListener('click', () => {
 
     links.forEach(a => a.click());
 });
-
 </script>
 
 </body>
