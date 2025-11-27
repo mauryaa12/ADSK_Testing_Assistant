@@ -3,72 +3,144 @@
     "code": "CONNECT",
     "name": "Autodesk Connect",
     "languages": ["CHS", "CHT", "CSY", "DEU", "ESP", "FRA", "HUN", "ITA", "JPN", "KOR", "PLK", "PTB", "RUS"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "PLM",
     "name": "Autodesk Fusion Manage",
     "languages": ["CHS", "CSY", "DEU", "FRA", "ITA", "JPN", "KOR"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "NINCAD",
     "name": "Autodesk NINCAD",
     "languages": ["ENU", "CHS", "DEU", "FRA", "JPN"],
-    "usesYearBranch": true
+    "usesYearBranch": true,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "TANDEM",
     "name": "Autodesk Tandem",
     "languages": ["JPN", "KOR", "FRA", "DEU", "ESP"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "VEHTRK",
     "name": "Autodesk Vehicle Tracking",
     "languages": ["DEU", "JPN", "CHS", "FRA", "ITA", "ESP", "ENG", "CHT", "KOR", "RUS", "CSY", "PLK", "PTB", "HUN"],
-    "usesYearBranch": true
+    "usesYearBranch": true,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "CIV3D",
     "name": "Civil 3D",
     "languages": ["CSY", "CHS", "CHT", "DEU", "ENG", "ESP", "FRA", "HUN", "ITA", "JPN", "KOR", "PLK", "PTB", "RUS"],
-    "usesYearBranch": true
+    "usesYearBranch": true,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "C3DGO",
     "name": "Grading Optimization",
     "languages": ["CSY", "CHS", "CHT", "DEU", "ENG", "ESP", "FRA", "HUN", "ITA", "JPN", "KOR", "PLK", "PTB", "RUS"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "INFDS",
     "name": "InfoDrainage",
     "languages": ["ENG", "ESP", "FRA"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "IWICMS",
     "name": "InfoWorks ICM",
     "languages": ["DEU", "ESP", "FRA", "ITA", "JPN"],
-    "usesYearBranch": true
+    "usesYearBranch": true,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "IWWSPRO",
     "name": "InfoWorks Pro",
     "languages": ["DEU", "ESP", "FRA", "ITA", "JPN"],
-    "usesYearBranch": true
+    "usesYearBranch": true,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "INFMDR",
     "name": "InfraWorks",
     "languages": ["JPN", "DEU", "FRA", "CHS", "ITA", "ESP", "RUS", "ENG", "PTB"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   },
   {
     "code": "RECAP",
     "name": "ReCap",
     "languages": ["CHS", "CHT", "CSY", "DEU", "ESP", "FRA", "ITA", "JPN", "KOR", "PLK", "PTB"],
-    "usesYearBranch": false
+    "usesYearBranch": false,
+    "method": "TRIDION",
+    "hasBetaStaging": false,
+    "git_link": "",
+    "wiki_link": "",
+    "tridion_link": ""
   }
+  {
+ 
+    "code": "MDB",
+     "name": "Moldflow Material Database",
+     "languages": ["CHS", "CHT", "DEU", "ESP", "FRA", "JPN", "KOR", "PTG"],
+     "usesYearBranch": true,
+     "method": "CLC",
+     "hasBetaStaging": true,
+     "git_link": "https://git.autodesk.com/moldflow/material-database-cxd",
+     "wiki_link": "https://wiki.autodesk.com/display/LOCSIMU/Moldflow+Doc+Help+Localization+Info",
+     "tridion_link": ""
+   }
 ]
